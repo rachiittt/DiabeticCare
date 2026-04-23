@@ -1,7 +1,6 @@
-NST DVA Capstone 2 — ETL Transformation Log
+NST DVA Capstone 2 - ETL Transformation Log
 Notebook : 02_cleaning.ipynb
 Dataset  : Diabetic Patient Readmission (Healthcare)
-Source   : UCI Machine Learning Repository
 ============================================================
 
 [STEP 00] Raw dataset loaded: 101,766 rows x 50 cols
@@ -11,13 +10,11 @@ Source   : UCI Machine Learning Repository
 [STEP 04] Kept first encounter per patient_nbr to prevent data leakage in readmission analysis  |  rows: 99,343 -> 69,990  (removed 29,353)
 [STEP 05] Filled all missing values: max_glu_serum/A1Cresult->None, specialty/payer->Unknown, race->mode, diag_2/3->0
 [STEP 06] age: bracket string -> numeric midpoint (e.g. [70-80) -> 75). Original kept in age_bracket
-[STEP 07] Mapped admission_type_id, discharge_disposition_id, admission_source_id -> readable label columns
-[STEP 08] diag_1/2/3 ICD-9 codes grouped into disease categories -> diag_cat_1/2/3
-[STEP 09] 20 medication cols encoded (0=No, 1=Steady, 2=Down, 3=Up). Derived: num_medications_active, total_med_changes
-[STEP 10] max_glu_serum and A1Cresult encoded to ordinal ints (0=None/not tested, 3=highest level)
-[STEP 11] Target engineered: readmitted_30day (binary) and readmitted_code (ordinal). 30-day rate = 8.98%
-[STEP 12] Derived KPIs: procedures_per_day, high_med_burden, polypharmacy, prior_visits_total, is_chronic_patient
-[STEP 13] All column names standardised to lowercase snake_case
-[STEP 14] FINAL EXPORT: ../data/processed/diabetic_data_clean.csv | 69,990 rows x 85 cols | 24.4 MB
+[STEP 07] Mapped admission/discharge IDs to human-readable strings in-place
+[STEP 08] Grouped diag_1/2/3 ICD-9 codes into broad disease categories in-place
+[STEP 09] Applied ordinal encoding to 20 med columns and 2 lab columns in-place
+[STEP 10] Replaced readmitted with binary readmitted_30day target. Rate = 8.98%
+[STEP 11] Standardized column names to lowercase snake_case
+[STEP 12] FINAL EXPORT: ../data/processed/diabetic_data_clean.csv | 69,990 rows x 48 cols | 15.2 MB
 
-Total transformations: 15
+Total transformations: 13
