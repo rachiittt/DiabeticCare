@@ -27,13 +27,13 @@ Identifying clinical, demographic, and operational drivers of 30-day hospital re
 
 | Role | Name | GitHub |
 |---|---|---|
-| Project Lead | _To be filled_ | — |
-| Data Lead | _To be filled_ | — |
+| Project Lead | Omkar Shukla | `omkarshukla84` |
+| Data Lead | Omkar Shukla | `omkarshukla84` |
 | ETL Lead | Jatin Verma | `jatinverma2007` |
-| Analysis Lead | Archit Raj | `github-handle` |
+| Analysis Lead | Rachit | `github-handle` |
 | Visualization Lead | Shobhit | `github-handle` |
-| Strategy Lead | Om Kar Shukla | `omkarshukla84` |
-| PPT & Quality Lead | Rishav Dewan | `rishavdewan10` |
+| Report Lead | Rishav Dewan | `rishavdewan10` |
+| Strategy Lead | Aditya Yadav | `github-handle` |
 
 ---
 
@@ -58,7 +58,7 @@ The CMS Hospital Readmissions Reduction Program (HRRP) penalises hospitals for e
 | **Source** | UCI Machine Learning Repository — Health Facts (Cerner Corporation) |
 | **Access Link** | [UCI Diabetic 130-US Hospitals Dataset](https://archive.ics.uci.edu/ml/datasets/diabetes+130-us+hospitals+for+years+1999-2008) |
 | **Raw Records** | 101,766 encounters |
-| **Cleaned Records** | 69,990 (after deduplication, null removal, deceased/hospice exclusion) |
+| **Cleaned Records** | 69,990 (after deduplication and null treatment) |
 | **Columns** | 50 (clinical, demographic, operational) |
 | **Period** | 1999–2008 · 130 US hospitals |
 | **Target Variable** | `readmitted_30day` — binary: Yes (`<30` days) / No (otherwise) |
@@ -91,29 +91,29 @@ For full column definitions and derived features, see [`docs/data_dictionary.md`
 | Stage | Action | Result |
 |---|---|---|
 | **1 — Ingestion** | Load raw CSV via `pandas.read_csv()`; identify `?` as null placeholder | 101,766 × 50 loaded |
-| **2 — Missing Values** | `weight` dropped (96.9% null); `medical_specialty` → `Unknown`; `race` rows removed (2.2%) | Key nulls resolved |
-| **3 — Deduplication** | First encounter per patient retained; deceased/hospice discharges removed (IDs 11,13,14,19,20,21) | 69,990 clean records |
-| **4 — Feature Engineering** | Binary `readmitted_30day` target; `admission_type_id` mapped to labels; `on_insulin` flag; 4-variable risk score | Model-ready features |
-| **5 — Export** | `data/processed/diabetic_clean.csv` with validated column types | Ready for Tableau ingestion |
+| **2 — Missing Values** | `weight` dropped (96.9% null); `medical_specialty` imputed as `Unknown`; `race` rows removed (2.2%) | Key nulls resolved |
+| **3 — Deduplication** | Duplicate encounter rows removed so each row represents one inpatient stay | 69,990 clean records |
+| **4 — Feature Engineering** | Binary `readmitted_30day` target; `admission_type_id` mapped to labels; `on_insulin` flag created | Analysis-ready features |
+| **5 — Export** | Cleaned output exported for Tableau ingestion as [`data/processed/diabetic_data_clean.csv`](data/processed/diabetic_data_clean.csv) | Ready for dashboarding |
 
 ---
 
 ## KPI Framework
 
-All 10 KPIs computed in [`notebooks/05_final_load_prep.ipynb`](notebooks/05_final_load_prep.ipynb) and verified against the live Tableau dashboard.
+All 10 KPIs were computed from the cleaned dataset and verified against the live Tableau dashboard.
 
-| # | KPI | Formula | Dashboard Value |
+| # | KPI | What It Answers | Dashboard Value |
 |---|---|---|---|
-| 1 | **30-Day Readmission Rate** | `COUNT(readmitted='<30') / COUNT(total) × 100` | **8.98%** |
-| 2 | **Overall Readmission Rate** | `COUNT(readmitted≠'NO') / COUNT(total) × 100` | **46.1%** (raw dataset) |
-| 3 | **Emergency Admission Rate** | `COUNT(admission_type_id=1) / COUNT(total) × 100` by readmitted group | Emergency = largest readmitted segment |
-| 4 | **Medication Change Rate at Discharge** | `COUNT(change='Ch') / COUNT(total) × 100` by readmitted | **52.70% of readmits — NO change** |
-| 5 | **High-Risk Age Group Share** | `COUNT(<30 by age) / COUNT(all <30) × 100` | **[70-80] highest — 17,751 encounters** |
-| 6 | **Prior Inpatient Visit Rate** | `AVG(number_inpatient)` by readmitted group | **0.35 (readmitted) vs 0.12 (not) — 3× gap** |
-| 7 | **Insulin Usage Rate** | `COUNT(insulin≠'No') / COUNT(total) × 100` by readmitted | **58.1% of early readmits on insulin** |
-| 8 | **Avg Lab Procedures per Encounter** | `AVG(num_lab_procedures)` by readmitted | Higher for readmitted cohort |
-| 9 | **Diabetes Medication Prescription Rate** | `COUNT(diabetesMed='Yes') / COUNT(total) × 100` by readmitted | High prescription rate, outcomes not improving |
-| 10 | **Avg Diagnoses per Encounter** | `AVG(number_diagnoses)` by readmitted | **7.69 (readmitted) vs 7.22 (not readmitted)** |
+| 1 | **30-Day Readmission Rate** | Are discharge protocols meeting CMS standards? | **8.98%** |
+| 2 | **Total Early Readmissions** | What is the absolute scale? | **6,285 patients** |
+| 3 | **Avg Prior Visits — Readmitted** | Does visit history predict readmission? | **~0.35** |
+| 4 | **Avg Prior Visits — Not Readmitted** | What is the low-risk baseline? | **~0.12** |
+| 5 | **Medication Change Rate — Readmitted** | Is discharge treatment optimised? | **47.30% changed / 52.70% no change** |
+| 6 | **Medication Change Rate — Not Readmitted** | Does change reduce risk? | **44.78% changed / 55.22% no change** |
+| 7 | **Avg Medications per Encounter** | What is the polypharmacy burden? | **15.67** |
+| 8 | **High Risk Patient Share** | What proportion are high-risk? | **2.35%** |
+| 9 | **Avg Risk Score (Population)** | What is the population-wide risk level? | **2.16** |
+| 10 | **Top Age Group by Volume** | Which group needs priority care? | **[70-80]: 17,751 encounters** |
 
 ---
 
@@ -153,8 +153,8 @@ Screenshots: [`tableau/screenshots/`](tableau/screenshots/) — Link file: [`tab
 | **R1** | 52.70% of early readmits discharged without medication change | **Mandate Medication Review Before Every Diabetic Discharge.** Documented endocrinologist or pharmacist sign-off required for all diabetic inpatients. Undocumented exceptions must have clinical justification logged. | ~580 readmissions prevented · **$8.3M/yr** · 60–90 days |
 | **R2** | [70-80] = 17,751 encounters; 60+ accounts for majority of all early readmissions | **Launch a 14-Day Geriatric Diabetes Discharge Protocol for Patients Aged 60+.** Day 2 phone call → Day 5 nurse visit → Day 10 telehealth → Day 14 outpatient appointment. | ~1,194 readmissions prevented · **$17.2M/yr** · 90–120 days |
 | **R3** | Prior visits 3× higher; elevated labs, meds, and diagnoses all measurable at Day 1 | **Deploy a 4-Variable Readmission Risk Score at Admission.** Inputs: prior inpatient visits + diagnoses + medications + lab procedures. Top 20% trigger enhanced care pathway with dedicated case manager from Day 1. | ~460 readmissions prevented · **$6.6M/yr** · 90–180 days |
-| **R4** | Emergency carries the largest readmitted segment; Internal Medicine = 1,646 early readmissions | **Introduce 5-Point Specialty Discharge Checklists for Internal Medicine and Emergency.** Glucose stable 24h · patient education complete · follow-up booked · medication reconciliation signed · written care plan issued. | ~270 readmissions prevented · **$3.9M/yr** · 30–60 days |
-| **R5** | 58.1% of early readmits on insulin; significant management variability across departments | **Standardise Inpatient Insulin Management Per ADA 2024 Guidelines.** Mandatory HbA1c on admission · standard titration protocol · diabetes nurse review within 24h · structured insulin education before discharge. | ~390 readmissions prevented · **$5.6M/yr** · 60–90 days |
+| **R4** | Emergency carries the largest readmission segment in the admission type chart | **Introduce Specialty Discharge Checklists for Emergency-focused diabetic discharges.** Glucose stable 24h · patient education complete · follow-up booked · medication reconciliation signed · written care plan issued. | ~270 readmissions prevented · **$3.9M/yr** · 30–60 days |
+| **R5** | High Risk patients lead on all clinical indicators, including medication-management complexity | **Standardise Inpatient Insulin Management Per ADA 2024 Guidelines.** Mandatory HbA1c on admission · standard titration protocol · diabetes nurse review within 24h · structured insulin education before discharge. | ~390 readmissions prevented · **$5.6M/yr** · 60–90 days |
 
 **Combined conservative impact: ~2,894 readmissions prevented · $41.6M saved annually · fully implemented within 6 months.**
 
@@ -202,20 +202,21 @@ SectionB_G-15_DiabeticCare/
 │   ├── 04_statistical_analysis.ipynb
 │   └── 05_final_load_prep.ipynb
 │
-├── scripts/
-│   └── etl_pipeline.py
-│
 ├── tableau/
 │   ├── screenshots/
 │   └── dashboard_links.md
 │
 ├── reports/
-│   ├── README.md
-│   ├── project_report_template.md
-│   └── presentation_outline.md
+│   ├── G15_Diabetic_Readmission_Report.docx
+│   └── README.md
 │
 ├── docs/
 │   └── data_dictionary.md
+│
+├── Diabetic_Readmission_Analytics_G-15_v2.pptx
+│
+├── scripts/
+│   └── __init__.py
 │
 ├── DVA-oriented-Resume/
 └── DVA-focused-Portfolio/
@@ -257,7 +258,7 @@ SectionB_G-15_DiabeticCare/
 - [x] Dashboard directly addresses the business problem
 
 **Project Report**
-- [x] Exported as PDF into `reports/`
+- [x] Final project report added under `reports/`
 - [x] Cover page, executive summary, sector context, problem statement
 - [x] Data description, cleaning methodology, KPI framework
 - [x] EDA with written insights and statistical analysis results
@@ -278,18 +279,19 @@ SectionB_G-15_DiabeticCare/
 
 ## Contribution Matrix
 
-| Team Member | Dataset & Sourcing | ETL & Cleaning | EDA & Analysis | Statistical Analysis | Tableau Dashboard | Report Writing | PPT & Viva |
-|---|---|---|---|---|---|---|---|
-| Rishav Dewan | Support | Support | Support | Support | Support | **Owner** | Support |
-| Jatin Verma | **Owner** | **Owner** | Support | Support | Support | Support | Support |
-| Archit Raj | Support | Support | **Owner** | **Owner** | Support | Support | Support |
-| Shobhit | Support | Support | Support | Support | **Owner** | Support | Support |
-| Om Kar Shukla | Support | Support | Support | Support | Support | Support | **Owner** |
-| Rachit Singh | Support | **Owner** | Support | Support | Support | **Owner** | Support |
+| Role | Member | Workstream Ownership | Key Deliverables |
+|---|---|---|---|
+| Project Lead | Omkar Shukla | Sector context, problem statement, KPI framework, recommendations, impact | Sections 1 & 2, KPI Framework (Section 4), slide deck narrative |
+| Data Lead | Omkar Shukla | Dataset exploration, variable group profiling, KPI framework design, data quality validation | Section 2, Section 4, cleaned dataset validation |
+| ETL Lead | Jatin Verma | Data ingestion, cleaning pipeline, feature engineering, CSV export | Notebooks 01-04, cleaned dataset output |
+| Analysis Lead | Rachit | EDA, statistical analysis, hypothesis testing, KPI computation | Notebook 05, KPI outputs, EDA charts and insights |
+| Visual Lead | Shobhit | Tableau dashboard design, 3-view publication, filter wiring, chart build | Tableau dashboard, screenshots, URL documentation |
+| Report Lead | Rishav Dewan | Report compilation, slide deck, final formatting, README alignment | Project report, presentation deck, GitHub README |
+| Strategy Lead | Aditya Yadav | Business recommendations, impact estimation, limitations and future scope, executive summary narrative | Sections 9-11, executive summary, impact estimation table |
 
 _We confirm the above is accurate and verifiable through GitHub Insights, PR history, and submitted artifacts._
 
-**Team Lead:** _____________________________ &nbsp;&nbsp;&nbsp; **Date:** _______________
+**Team Lead:** Omkar Shukla &nbsp;&nbsp;&nbsp; **Date:** April 2026
 
 ---
 
