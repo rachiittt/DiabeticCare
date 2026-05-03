@@ -1,4 +1,4 @@
-# Diabetic Patient Readmission Analytics
+# Diabetic Patient Readmission Analytics.
 
 > **Newton School of Technology · Data Visualization & Analytics · DVA Capstone 2**
 
